@@ -1,21 +1,37 @@
 import  { useState, useEffect } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import Error from "../components/error.jsx";
 import Spinner  from "../components/spiner.jsx";
 import './style/components/Table.css'
 
 export default function App() {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetch('http://localhost:5000/get_data')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API to Server error');
+                }
+                return response.json();
+            })
             .then(data => {
                 setData(data);
+                setIsLoading(false);
+            })
+            .catch(error => {
+                console.error(error);
+                setError('API to Server error');
                 setIsLoading(false);
             });
     }, []);
 
+    if (error) {
+        return <div><Error /></div>;
+    }
+    
     if (isLoading) {
         return <div className="grid items-center justify-center"><Spinner /></div>;
     }
